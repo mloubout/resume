@@ -1,0 +1,28 @@
+#!/bin/bash
+INPUTS=$PWD/inputs
+
+# Get my biblblio
+wget 'https://slim.gatech.edu/biblio/export/bibtex?f%5Bauthor%5D=1' -O $INPUTS/mypubs.bib
+
+# Make the html
+pandoc --citeproc --standalone \
+         --include-in-header $INPUTS/chmduquesne.css \
+         --from markdown --to html \
+         --output resume.html \
+         --css $INPUTS/slim.css \
+         --metadata pagetitle=resume resume.md
+
+# Make the pdf
+rm $INPUTS/resume.tex
+
+pandoc --verbose --citeproc --standalone \
+       --from markdown --to context --natbib \
+       --variable papersize=A4 \
+       --template $INPUTS/chmduquesne.tex \
+       --css $INPUTS/slim.css \
+       --output $INPUTS/resume.tex resume.md
+
+# latexmk -pdf -halt-on-error -interaction=batchmode -recorder -outdir=build $INPUTS/resume.tex
+
+mtxrun --result=resume.pdf --script context $INPUTS/resume.tex
+rm resume.log resume.tuc 
